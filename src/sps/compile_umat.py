@@ -49,6 +49,11 @@ def compile_umat(fortran_path: pathlib.Path) -> None:
         mpif90 = shutil.which("mpif90")
         mpif77 = shutil.which("mpif77")
 
+        if mpif90 is None:
+            raise Exception("Executable for mpif90 could not be found")
+        if mpif77 is None:
+            raise Exception("Executable for mpif77 could not be found")
+
         # TODO intel vs gnu vs ...
         fortran_compiler_args = "-ffree-form -ffree-line-length-512 -fcray-pointer -cpp"
 
