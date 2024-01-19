@@ -1,1 +1,8 @@
 venv/
+
+src/sps/*.toml
+src/sps/*.f
+srs/sps/*.f90
+srs/sps/*.so
+srs/sps/*.pyf
+srs/sps/__pycache__

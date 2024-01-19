@@ -1,169 +1,29 @@
 #!/usr/bin/env python3
 
-import numpy as np
-from abc import abstractmethod
-from dataclasses import dataclass
-from math import sin, cos, sqrt
+from base import Scenario
+from scipy.linalg import fractional_matrix_power
 
-@dataclass(slots=True)
-class SPSOutputs:
-    self.stress: list[float]
-    self.strain: list[float]
-    self.time: list[float]
-    self.Eeff: list[float]
-    self.all_dfrd: list[float]
-    self.vals: list[float]
+class ArbitraryGradientScenario(Scenario):
 
-class Scenario:
-    __slots__ = (
-        "sps_input",
+    def get_loading_directions(self) -> tuple:
+        print("Arbitrary Loading along the diagonal\n")
+        return 0, 1, 2
 
-        "umat",
-        "props_ref",
-        "dtime_ref",
-        "statev",
-        "statev_ref",
-        "ddsdde",
-        "ddsddt",
-        "dpred",
-        "drplde",
-        "dstrain",
-        "predef",
-        "strain",
-        "stress",
-        "coords",
-
-        "time",
-        "E_eff",
-        "dfgrd0",
-        "dfgrd1",
-        "drot",
-
-        "NTENS",
-        "MAX_ITR",
-        "TOLERANCE",
-        "NSHR",
-        "NDI",
+    def update_dfgrd(self, i: int, j: int, k: int) -> None:
+        delta_Dii = -(self.stress[i] + self.stress[j]) / (
+            self.ddsdde[i][i]
+            + self.ddsdde[i][j]
+            + self.ddsdde[j][i]
+            + self.ddsdde[j][j]
         )
+        self.dfgrd1[i][i] /= 1 - delta_Dii
+        self.dfgrd1[j][j] /= 1 - delta_Dii
 
-    def __init__(self, input_data, umat):
-        self.sps_input = input_data
+    def get_stress_tester(self, stress: np.ndarray, i: int, j: int, k: int) -> float:
+        return abs(stress[i] + stress[j]) / abs(stress[k])
 
-        self.umat = umat
-
-        # TODO Parameterize/Configure?
-        self.NTENS = 6
-        self.MAX_ITR = 4
-        self.TOLERANCE = 0.001
-        self.NSHR = 3
-        self.NDI = 3
-
-        self.props_ref = np.copy(self.props)
-        self.dtime_ref = np.copy(self.dtime)
-
-        self.statev = np.zeros(self.nstatv)
-        self.statev_ref = np.zeros(self.nstatv)
-
-        self.ddsdde = np.zeros((self.NTENS, self.NTENS))
-        self.ddsddt = np.zeros(self.NTENS)
-        self.dpred = np.zeros(1)
-        self.drplde = np.zeros(self.NTENS)
-        self.dstrain = np.zeros(self.NTENS)
-        self.predef = np.zeros(1)
-        self.strain = np.zeros(self.NTENS)
-        self.stress = np.zeros(self.NTENS)
-        self.coords = np.zeros(3)
-
-        # Initialize time and deformation gradients
-        self.time = np.zeros(2)
-        self.E_eff = 0.0
-        self.dfgrd0 = np.asfortranarray(np.identity(3))
-        self.dfgrd1 = np.asfortranarray(np.identity(3))
-        self.drot = np.asfortranarray(np.identity(3))
-
-
-    def __getattr__(self, slot):
-        try:
-            return getattr(self, slot)
-        except AttributeError:
-            return getattr(self.sps_input, slot)
-
-    def reset_variables(self) -> None:
-        """resets all variables at the beginning of the simulation (in case of multiple function calls)
-        without reassigning the variables in memory"""
-        self.props[:] = self.props_ref
-        self.ddsdde.fill(0)
-        self.ddsddt.fill(0)
-        self.dpred.fill(0)
-        self.drplde.fill(0)
-        self.dstrain.fill(0)
-        self.predef.fill(0)
-        self.strain.fill(0)
-        self.stress.fill(0)
-        self.coords.fill(0)
-        self.time.fill(0)
-        self.E_eff = 0.0
-        self.dfgrd0 = np.asfortranarray(np.identity(3))
-        self.dfgrd1 = np.asfortranarray(np.identity(3))
-        self.drot = np.asfortranarray(np.identity(3))
-        self.statev.fill(0)
-        self.statev_ref.fill(0)
-        self.dtime = self.dtime_ref
-
-    def von_mises_stress(self) -> float:
-        return np.sqrt(
-            0.5
-            * (
-                np.power((self.stress[0] - self.stress[1]), 2)
-                + np.power((self.stress[1] - self.stress[2]), 2)
-                + np.power((self.stress[2] - self.stress[0]), 2)
-            )
-            + 3 * (np.sum(np.square(self.stress[3:6])))
-        )
-
-    def test_matrices(self, matrix: np.ndarray, varName: str) -> None:
-        # np.isreal will flag true any NaN or inf values, so additional conditions required
-        if not np.all(np.isreal(matrix)) or (
-            np.any(np.isnan(matrix)) or np.any(np.isinf(matrix))
-        ):
-            raise Exception(
-                f"ERROR: {varName} matrix contains NaN, infinity, or a non-real number"
-            )
-
-    def spin_to_matrix(self, a):
-        """
-        Converts spin tensor to a rotation matrix.
-        """
-        p1 = a[2][1]
-        p2 = a[0][2]
-        p3 = a[1][0]
-        ang = sqrt(p1 * p1 + p2 * p2 + p3 * p3)
-
-        s = sin(ang)
-        c = cos(ang)
-
-        # Normalize vector
-        if ang < 1e-300:
-            p1 = 0
-            p2 = 0
-            p3 = 1.0
-        else:
-            p1 = p1 / ang
-            p2 = p2 / ang
-            p3 = p3 / ang
-
-        b = np.zeros((3, 3))
-        b[0][0] = c + (1.0 - c) * p1**2
-        b[0][1] = (1.0 - c) * p1 * p2 - s * p3
-        b[0][2] = (1.0 - c) * p1 * p3 + s * p2
-        b[1][0] = (1.0 - c) * p2 * p1 + s * p3
-        b[1][1] = c + (1.0 - c) * p2**2
-        b[1][2] = (1.0 - c) * p2 * p3 - s * p1
-        b[2][0] = (1.0 - c) * p3 * p1 - s * p2
-        b[2][1] = (1.0 - c) * p3 * p2 + s * p1
-        b[2][2] = c + (1.0 - c) * p3 * p3
-
-        return b
+    def perform_arbitrary_gradient_loading(input_dfgrd: np.ndarray) -> None:
+        self.dfgrd1 = fractional_matrix_power(input_dfgrd, self.time[0] / self.time_max)
 
     def run_simulation(self):
         self.reset_variables()
@@ -227,7 +87,7 @@ class Scenario:
             # Increment one time step
             self.time += self.dtime
             # loading
-            self.perform_loading(i, j, k)
+            self.perform_arbitrary_gradient_loading(input_dfgrd)
 
             ########################
             # Start new convergence iteration.
