@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
-from base import Scenario
+import numpy as np
+from .base import Scenario
 
 class CompressionTorsionScenario(Scenario):
 
     def get_loading_directions(self) -> tuple:
         print(
-            f"Simultaneous Compression and Torsion in the {self.loading_i}-{self.loading_j} plane\n"
+            f"Simultaneous Compression and Torsion in the {self.loading_direction_i}-{self.loading_direction_j} plane\n"
         )
         return (
-            self.loading_i - 1,
-            5 - self.loading_i - self.loading_j,
-            self.loading_j - 1,
+            self.loading_dirction_i - 1,
+            5 - self.loading_direction_i - self.loading_direction_j,
+            self.loading_direction_j - 1,
         )
 
     def update_dfgrd(self, i: int, j: int, k: int) -> None:
@@ -35,11 +36,11 @@ class CompressionTorsionScenario(Scenario):
 
     def perform_loading(self, i: int, j: int, k: int) -> None:
         m = i + k + 2
-        self.dfgrd1[k][k] = self.dfgrd0[k][k] + self.v_1 * self.dtime
-        self.dfgrd1[i][k] = self.dfgrd0[i][k] + self.v_2 * self.dtime
+        self.dfgrd1[k][k] = self.dfgrd0[k][k] + self.velocities[0] * self.dtime
+        self.dfgrd1[i][k] = self.dfgrd0[i][k] + self.velocities[1] * self.dtime
 
         delta_Dkk = (self.dfgrd1[k][k] - self.dfgrd0[k][k]) / self.dfgrd1[k][k]
-        delta_Dik = self.v_2 * self.dtime / 2.0 / self.dfgrd1[i][i]
+        delta_Dik = self.velocities[1] * self.dtime / 2.0 / self.dfgrd1[i][i]
 
         det = (
             self.ddsdde[i][i] * self.ddsdde[j][j]

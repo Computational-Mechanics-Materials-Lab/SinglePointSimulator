@@ -1,0 +1,68 @@
+#### Example singlepointsim input file
+# Name/path of desired UMAT
+umat = "MODIFIED_JC.f90"
+
+# Path to desired results directory (defaults to "." if not set)
+# Will be created if it does not exist
+results_directory = "results"
+
+# UMAT props
+props = [
+    120000.0,
+    80000.0,
+    300.0,
+    1785.0,
+    1,
+    792.0,
+    510.0,
+    0.26,
+    0.014,
+    1.03,
+    0.0,
+    0.0,
+    0.000001,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+]
+
+# UMAT nstatv
+nstatv = 6
+
+# Define as many steps as you desire. One loading scenario per step
+[[steps]]
+# Which loading scenario to use
+loading_scenario = "compression"
+# Starting dtime parameter
+dtime = 0.001
+# Maximium possible value of dtime
+dtime_max = 100
+# Total simulation time
+time_max = 0.05
+# Direction(s) of loading
+loading_direction_i = 3
+loading_direction_j = 3
+# Displacements per loading direction
+displacements = [0.5]
+# Starting temperature in Kelvin
+temp = 310
+# Change in temperature
+dtemp = 0.0

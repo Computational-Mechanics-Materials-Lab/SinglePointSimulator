@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
-from base import Scenario
+import numpy as np
+from .base import Scenario
 
 class TensionCompressionScenario(Scenario):
     def get_loading_directions(self) -> tuple:
-        if self.loading_i != self.loading_j:
+        if self.loading_direction_i != self.loading_direction_j:
             # write exception handling later
             raise Exception(
                 "WARNING! Loading directions not equivalent in input file.\n"
             )
         print(
-            f"Simultaneous Tension and Compression in the {self.loading_i}-{self.loading_j} plane\n"
+            f"Simultaneous Tension and Compression in the {self.loading_direction_i}-{self.loading_direction_j} plane\n"
         )
-        return self.loading_j % 3, (self.loading_j + 1) % 3, self.loading_j - 1
+        return self.loading_direction_j % 3, (self.loading_direction_j + 1) % 3, self.loading_direction_j - 1
 
     def update_dfgrd(self, i: int, j: int, k: int) -> None:
         delta_Dii = -(self.stress[i] + self.stress[j]) / (
@@ -28,7 +29,7 @@ class TensionCompressionScenario(Scenario):
         return abs(stress[i] + stress[j]) / abs(stress[k])
 
     def perform_loading(self, i: int, j: int, k: int) -> None:
-        self.dfgrd1[k][k] = self.dfgrd0[k][k] + self.v_1 * self.dtime
+        self.dfgrd1[k][k] = self.dfgrd0[k][k] + self.velocities[0] * self.dtime
         delta_Dkk = (self.dfgrd1[k][k] - self.dfgrd0[k][k]) / self.dfgrd1[k][k]
         delta_Dii = (
             -1

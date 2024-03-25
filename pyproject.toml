@@ -1,0 +1,18 @@
+[project]
+name = "singlepointsim"
+description = "(V)UMAT interoperability layer for quick, pythonic single-point analysis and material-model validation."
+readme = "README.md"
+license = "LICENSE"
+authors = [{name = "Clark Hensley", email = "clarkhensley@duck.com"},]
+maintainers = [{name = "Clark Hensley", email = "clarkhensley@duck.com"},]
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "tomli; python_version < '3.11'",
+]
+version = "0.0.1"
+
+[build-system]
+requires = ["setuptools", "wheel",]
+build-backend = "setuptools.build_meta"
