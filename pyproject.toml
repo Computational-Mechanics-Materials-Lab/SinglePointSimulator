@@ -2,7 +2,7 @@
 name = "singlepointsim"
 description = "(V)UMAT interoperability layer for quick, pythonic single-point analysis and material-model validation."
 readme = "README.md"
-license = "LICENSE"
+license = {file = "LICENSE"}
 authors = [{name = "Clark Hensley", email = "clarkhensley@duck.com"},]
 maintainers = [{name = "Clark Hensley", email = "clarkhensley@duck.com"},]
 dependencies = [
