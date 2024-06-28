@@ -1,0 +1,45 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module NEW ! in 
+    interface  ! in :NEW
+        subroutine unknown_subroutine ! in :NEW:MODIFIED_JC.f90
+        end subroutine unknown_subroutine
+        subroutine unknown_subroutine ! in :NEW:MODIFIED_JC.f90
+        end subroutine unknown_subroutine
+        subroutine unknown_subroutine ! in :NEW:MODIFIED_JC.f90
+        end subroutine unknown_subroutine
+        subroutine skip_plasticity(yssl,depsl,epdsl,stressd) ! in :NEW:MODIFIED_JC.f90
+            double precision :: yssl
+            double precision :: depsl
+            double precision :: epdsl
+            double precision dimension(3,3) :: stressd
+        end subroutine skip_plasticity
+        subroutine calc_trial_devstress(stress,dstrain,mu,sigtdev) ! in :NEW:MODIFIED_JC.f90
+            double precision dimension(6) :: stress
+            double precision dimension(6) :: dstrain
+            double precision :: mu
+            double precision dimension(3,3) :: sigtdev
+        end subroutine calc_trial_devstress
+        subroutine calc_taus(sigd,gsl) ! in :NEW:MODIFIED_JC.f90
+            double precision dimension(3,3) :: sigd
+            double precision :: gsl
+        end subroutine calc_taus
+        subroutine unknown_subroutine ! in :NEW:MODIFIED_JC.f90
+        end subroutine unknown_subroutine
+        subroutine calc_potactive(gsl,yssl,acttol,actsl) ! in :NEW:MODIFIED_JC.f90
+            double precision :: gsl
+            double precision :: yssl
+            double precision :: acttol
+            logical :: actsl
+        end subroutine calc_potactive
+        subroutine unknown_subroutine ! in :NEW:MODIFIED_JC.f90
+        end subroutine unknown_subroutine
+        subroutine unknown_subroutine ! in :NEW:MODIFIED_JC.f90
+        end subroutine unknown_subroutine
+    end interface 
+end python module NEW
+
+! This file was auto-generated with f2py (version:2.0.0).
+! See:
+! https://web.archive.org/web/20140822061353/http://cens.ioc.ee/projects/f2py2e

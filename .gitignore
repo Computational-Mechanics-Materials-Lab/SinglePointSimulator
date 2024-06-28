@@ -1,5 +1,13 @@
 venv/
 
+**/*.egg-info
+
+*.pyc
+
+results/
+build/
+dist/
+
 src/sps/*.toml
 src/sps/*.f
 srs/sps/*.f90

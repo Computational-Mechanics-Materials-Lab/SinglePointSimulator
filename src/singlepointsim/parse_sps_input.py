@@ -161,7 +161,7 @@ def parse_sps_input():
         with open(input_file, "rb") as fp:
             input_dict = tomllib.load(fp)
             umat = pathlib.Path(input_dict.pop("umat"))
-            results_directory = pathlib.Path(input_dict.pop("results_directory", ".")
+            results_directory = pathlib.Path(input_dict.pop("results_directory", "."))
             return umat, results_directory, SPSInput(**input_dict)
 
     except tomllib.TOMLDecodeError:
@@ -169,7 +169,7 @@ def parse_sps_input():
             with open(file_path, "r") as fp:
                 input_dict = json.load(fp)
                 umat = pathlib.Path(input_dict.pop("umat"))
-            results_directory = pathlib.Path(input_dict.pop("results_directory", ".")
+                results_directory = pathlib.Path(input_dict.pop("results_directory", "."))
                 return umat, results_directory, SPSInput(**input_dict)
 
         except json.decoder.JSONDeocdeError:

@@ -1,0 +1,181 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module plasticity_t ! in 
+    interface  ! in :plasticity_t
+        subroutine umat(stress,statev,ddsdde,sse,spd,scd,rpl,ddsddt,drplde,drpldt,strain,dstrain,time,dtime,temp,dtemp,predef,dpred,cmname,ndi,nshr,ntens,nstatv,props,nprops,coords,drot,pnewdt,celent,dfgrd0,dfgrd1,noel,npt,layer,kspt,kstep,kinc) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(ntens), intent(in,out) :: stress
+            double precision dimension(nstatv), intent(in,out) :: statev
+            double precision dimension(ntens,ntens),depend(ntens,ntens), intent(in,out) :: ddsdde
+            double precision :: sse
+            double precision :: spd
+            double precision :: scd
+            double precision :: rpl
+            double precision dimension(ntens),depend(ntens) :: ddsddt
+            double precision dimension(ntens),depend(ntens) :: drplde
+            double precision :: drpldt
+            double precision dimension(ntens),depend(ntens) :: strain
+            double precision dimension(ntens),depend(ntens) :: dstrain
+            double precision dimension(2), intent(in) :: time
+            double precision, intent(int) :: dtime
+            double precision :: temp
+            double precision :: dtemp
+            double precision dimension(1) :: predef
+            double precision dimension(1) :: dpred
+            character*8 :: cmname
+            integer :: ndi
+            integer :: nshr
+            integer, optional,check(len(stress)>=ntens),depend(stress) :: ntens=len(stress)
+            integer, optional,check(len(statev)>=nstatv),depend(statev) :: nstatv=len(statev)
+            double precision dimension(nprops) :: props
+            integer, optional,check(len(props)>=nprops),depend(props) :: nprops=len(props)
+            double precision dimension(3) :: coords
+            double precision dimension(3,3) :: drot
+            double precision :: pnewdt
+            double precision :: celent
+            double precision dimension(3,3), intent(in) :: dfgrd0
+            double precision dimension(3,3), intent(in) :: dfgrd1
+            integer :: noel
+            integer :: npt
+            integer :: layer
+            integer :: kspt
+            integer :: kstep
+            integer :: kinc
+        end subroutine umat
+        subroutine normalize_vector(x,y,z) ! in :plasticity_t:plasticity_umat.f
+            double precision :: x
+            double precision :: y
+            double precision :: z
+        end subroutine normalize_vector
+        subroutine transpose(n,a,b) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            double precision dimension(n,n) :: a
+            double precision dimension(n,n),depend(n,n) :: b
+        end subroutine transpose
+        subroutine aa_dot_bb(n,a,b,c) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            double precision dimension(n,n) :: a
+            double precision dimension(n,n),depend(n,n) :: b
+            double precision dimension(n,n),depend(n,n) :: c
+        end subroutine aa_dot_bb
+        subroutine aa_dot_dot_bb(n,a,b,sum) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            double precision dimension(n,n) :: a
+            double precision dimension(n,n),depend(n,n) :: b
+            double precision :: sum
+        end subroutine aa_dot_dot_bb
+        subroutine c_dot_dot_bb(c11,c12,c44,b,c) ! in :plasticity_t:plasticity_umat.f
+            double precision :: c11
+            double precision :: c12
+            double precision :: c44
+            double precision dimension(3,3) :: b
+            double precision dimension(3,3) :: c
+        end subroutine c_dot_dot_bb
+        subroutine rotate_4th(a,b,c) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(3,3) :: a
+            double precision dimension(3,3,3,3) :: b
+            double precision dimension(3,3,3,3) :: c
+        end subroutine rotate_4th
+        subroutine inverse_3x3(a,b) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(3,3) :: a
+            double precision dimension(3,3) :: b
+        end subroutine inverse_3x3
+        subroutine symmetric_inverse(np,n,a,b) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==np),depend(a) :: np=shape(a,0)
+            integer :: n
+            double precision dimension(np,np) :: a
+            double precision dimension(np,np),depend(np,np) :: b
+        end subroutine symmetric_inverse
+        subroutine symmetric_decomp(np,a,istart,istop) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==np),depend(a) :: np=shape(a,0)
+            double precision dimension(np,np) :: a
+            integer :: istart
+            integer :: istop
+        end subroutine symmetric_decomp
+        subroutine symmetric_backsub(np,n,a,b) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==np),depend(a) :: np=shape(a,0)
+            integer :: n
+            double precision dimension(np,np) :: a
+            double precision dimension(np),depend(np) :: b
+        end subroutine symmetric_backsub
+        subroutine voigt_to_forth(b,a) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(6,6) :: b
+            double precision dimension(3,3,3,3) :: a
+        end subroutine voigt_to_forth
+        subroutine forth_to_voigt(a,b) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(3,3,3,3) :: a
+            double precision dimension(6,6) :: b
+        end subroutine forth_to_voigt
+        function sgn(a) ! in :plasticity_t:plasticity_umat.f
+            double precision :: a
+            double precision :: sgn
+        end function sgn
+        function determinant(a) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(3,3) :: a
+            double precision :: determinant
+        end function determinant
+        subroutine print_array(n,a) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(a,0)==n),depend(a) :: n=shape(a,0)
+            double precision dimension(n,n) :: a
+        end subroutine print_array
+        subroutine matrix_to_euler(a,psi,theta,phi) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(3,3) :: a
+            double precision :: psi
+            double precision :: theta
+            double precision :: phi
+        end subroutine matrix_to_euler
+        subroutine euler_to_matrix(psi,theta,phi,a) ! in :plasticity_t:plasticity_umat.f
+            double precision :: psi
+            double precision :: theta
+            double precision :: phi
+            double precision dimension(3,3) :: a
+        end subroutine euler_to_matrix
+        function ran0(idum) ! in :plasticity_t:plasticity_umat.f
+            integer :: idum
+            double precision :: ran0
+        end function ran0
+        subroutine spin_to_matrix(a,b) ! in :plasticity_t:plasticity_umat.f
+            double precision dimension(3,3) :: a
+            double precision dimension(3,3) :: b
+        end subroutine spin_to_matrix
+        subroutine flow_rule(n,g,gamma_dot,gamma_zero,flow_exp,tau_c) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(len(g)>=n),depend(g) :: n=len(g)
+            double precision dimension(n) :: g
+            double precision dimension(n),depend(n) :: gamma_dot
+            double precision :: gamma_zero
+            double precision :: flow_exp
+            double precision dimension(n),depend(n) :: tau_c
+        end subroutine flow_rule
+        subroutine iso_hardening_law(n,g_dir,g_dyn,dtime,gamma_dot,xlatent,g0,g) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(len(gamma_dot)>=n),depend(gamma_dot) :: n=len(gamma_dot)
+            double precision :: g_dir
+            double precision :: g_dyn
+            double precision :: dtime
+            double precision dimension(n) :: gamma_dot
+            double precision :: xlatent
+            double precision dimension(n),depend(n) :: g0
+            double precision dimension(n),depend(n) :: g
+        end subroutine iso_hardening_law
+        subroutine kinematic_law(n,x_dir,x_dyn,dtime,gamma_dot,x0,x) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(len(gamma_dot)>=n),depend(gamma_dot) :: n=len(gamma_dot)
+            double precision :: x_dir
+            double precision :: x_dyn
+            double precision :: dtime
+            double precision dimension(n) :: gamma_dot
+            double precision dimension(n),depend(n) :: x0
+            double precision dimension(n),depend(n) :: x
+        end subroutine kinematic_law
+        subroutine dp_wrt_sig(n,dtime,flow_exp,p,g,gamma_dot,ddpdsig) ! in :plasticity_t:plasticity_umat.f
+            integer, optional,check(shape(p,2)==n),depend(p) :: n=shape(p,2)
+            double precision :: dtime
+            double precision :: flow_exp
+            double precision dimension(3,3,n) :: p
+            double precision dimension(n),depend(n) :: g
+            double precision dimension(n),depend(n) :: gamma_dot
+            double precision dimension(3,3,3,3) :: ddpdsig
+        end subroutine dp_wrt_sig
+    end interface 
+end python module plasticity_t
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
