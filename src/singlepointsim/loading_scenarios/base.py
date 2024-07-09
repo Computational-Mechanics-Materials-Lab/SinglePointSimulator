@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
-
+from __future__ import annotations
 import numpy as np
-import pandas as pd
-from dataclasses import dataclass, field
+import numpy.typing as _npt
 from math import sin, cos, sqrt
+from typing import Callable, Self
+from copy import copy
+from abc import abstractmethod
+from ..sps_dataclasses import SPSStep, SPSOutputs
 
-@dataclass(slots=True)
-class SPSOutputs:
-    stress: list[float] = field(default_factory=list)
-    strain: list[float] = field(default_factory=list)
-    time: list[float] = field(default_factory=list)
-    Eeff: list[float] = field(default_factory=list)
-    all_dfgrd: list[float] = field(default_factory=list)
-    vals: list[float] = field(default_factory=list)
 
 class Scenario:
     __slots__ = (
@@ -21,14 +16,11 @@ class Scenario:
         "dtime_max",
         "props",
         "nstatv",
-        "displacements",
         "loading_direction_i",
         "loading_direction_j",
         "temp",
         "dtemp",
         "velocities",
-        "dfgrd",
-
         "umat",
         "props_ref",
         "dtime_ref",
@@ -43,72 +35,65 @@ class Scenario:
         "strain",
         "stress",
         "coords",
-
         "time",
         "E_eff",
         "dfgrd0",
         "dfgrd1",
         "drot",
-
         "NTENS",
         "MAX_ITR",
         "TOLERANCE",
         "NSHR",
         "NDI",
-        )
+    )
 
-    def __init__(self, step, umat):
-        self.dtime = step.dtime
-        self.time_max = step.time_max
-        self.dtime_max = step.dtime_max
-        self.props = step.props
-        self.nprops = step.nprops
-        self.nstatv = step.nstatv
-        self.temp = step.temp
-        self.dtemp = step.dtemp
+    def __init__(self: Self, step: SPSStep, umat: Callable) -> None:
+        self.dtime: float = step.dtime
+        self.time_max: float = step.time_max
+        self.dtime_max: float = step.dtime_max
+        self.props: _npt.NDArray = np.array(step.props)
+        self.nprops: int = step.nprops
+        self.nstatv: int = step.nstatv
+        self.temp: float = step.temp
+        self.dtemp: float = step.dtemp
 
-        # Potentially None VVV
-        self.displacements = step.displacements
-        self.loading_direction_i = step.loading_direction_i
-        self.loading_direction_j = step.loading_direction_j
-        self.velocities = step.velocities
-        self.dfgrd = step.dfgrd
-        # Potentially None ^^^
+        self.loading_direction_i: int = step.loading_direction_i
+        self.loading_direction_j: int = step.loading_direction_j
+        self.velocities: list[float] = step.velocities
 
-        self.umat = umat
+        self.umat: Callable = umat
 
         # TODO Parameterize/Configure?
-        self.NTENS = 6
-        self.MAX_ITR = 4
-        self.TOLERANCE = 0.001
-        self.NSHR = 3
-        self.NDI = 3
+        self.NTENS: int = 6
+        self.MAX_ITR: int = 4
+        self.TOLERANCE: float = 0.001
+        self.NSHR: int = 3
+        self.NDI: int = 3
 
-        self.props_ref = np.copy(self.props)
-        self.dtime_ref = np.copy(self.dtime)
+        self.props_ref: _npt.NDArray = np.copy(self.props)
+        self.dtime_ref: float = copy(self.dtime)
 
-        self.statev = np.zeros(self.nstatv)
-        self.statev_ref = np.zeros(self.nstatv)
+        self.statev: _npt.NDArray = np.zeros(self.nstatv)
+        self.statev_ref: _npt.NDArray = np.zeros(self.nstatv)
 
-        self.ddsdde = np.zeros((self.NTENS, self.NTENS))
-        self.ddsddt = np.zeros(self.NTENS)
-        self.dpred = np.zeros(1)
-        self.drplde = np.zeros(self.NTENS)
-        self.dstrain = np.zeros(self.NTENS)
-        self.predef = np.zeros(1)
-        self.strain = np.zeros(self.NTENS)
-        self.stress = np.zeros(self.NTENS)
-        self.coords = np.zeros(3)
+        self.ddsdde: _npt.NDArray = np.zeros((self.NTENS, self.NTENS))
+        self.ddsddt: _npt.NDArray = np.zeros(self.NTENS)
+        self.dpred: _npt.NDArray = np.zeros(1)
+        self.drplde: _npt.NDArray = np.zeros(self.NTENS)
+        self.dstrain: _npt.NDArray = np.zeros(self.NTENS)
+        self.predef: _npt.NDArray = np.zeros(1)
+        self.strain: _npt.NDArray = np.zeros(self.NTENS)
+        self.stress: _npt.NDArray = np.zeros(self.NTENS)
+        self.coords: _npt.NDArray = np.zeros(3)
 
         # Initialize time and deformation gradients
-        self.time = np.zeros(2)
-        self.E_eff = 0.0
-        self.dfgrd0 = np.asfortranarray(np.identity(3))
-        self.dfgrd1 = np.asfortranarray(np.identity(3))
-        self.drot = np.asfortranarray(np.identity(3))
+        self.time: _npt.NDArray = np.zeros(2)
+        self.E_eff: float = 0.0
+        self.dfgrd0: _npt.NDArray = np.asfortranarray(np.identity(3))
+        self.dfgrd1: _npt.NDArray = np.asfortranarray(np.identity(3))
+        self.drot: _npt.NDArray = np.asfortranarray(np.identity(3))
 
-
-    def reset_variables(self) -> None:
+    def reset_variables(self: Self) -> None:
         """resets all variables at the beginning of the simulation (in case of multiple function calls)
         without reassigning the variables in memory"""
         self.props[:] = self.props_ref
@@ -130,7 +115,7 @@ class Scenario:
         self.statev_ref.fill(0)
         self.dtime = self.dtime_ref
 
-    def von_mises_stress(self) -> float:
+    def von_mises_stress(self: Self) -> float:
         return np.sqrt(
             0.5
             * (
@@ -141,7 +126,7 @@ class Scenario:
             + 3 * (np.sum(np.square(self.stress[3:6])))
         )
 
-    def test_matrices(self, matrix: np.ndarray, var_name: str) -> None:
+    def test_matrices(self: Self, matrix: _npt.NDArray, var_name: str) -> None:
         # np.isreal will flag true any NaN or inf values, so additional conditions required
         if not np.all(np.isreal(matrix)) or (
             np.any(np.isnan(matrix)) or np.any(np.isinf(matrix))
@@ -150,17 +135,31 @@ class Scenario:
                 f"ERROR: {var_name} matrix contains NaN, infinity, or a non-real number"
             )
 
-    def spin_to_matrix(self, a):
+    @abstractmethod
+    def get_loading_directions(self: Self) -> tuple[int, int, int]: ...
+
+    @abstractmethod
+    def get_stress_tester(
+        self: Self, stress: _npt.NDArray, i: int, j: int, k: int
+    ) -> float: ...
+
+    @abstractmethod
+    def perform_loading(self: Self, i: int, j: int, k: int) -> None: ...
+
+    @abstractmethod
+    def update_dfgrd(self: Self, i: int, j: int, k: int) -> None: ...
+
+    def spin_to_matrix(self: Self, a: _npt.NDArray) -> _npt.NDArray:
         """
         Converts spin tensor to a rotation matrix.
         """
-        p1 = a[2][1]
-        p2 = a[0][2]
-        p3 = a[1][0]
-        ang = sqrt(p1 * p1 + p2 * p2 + p3 * p3)
+        p1: float = a[2][1]
+        p2: float = a[0][2]
+        p3: float = a[1][0]
+        ang: float = sqrt(p1 * p1 + p2 * p2 + p3 * p3)
 
-        s = sin(ang)
-        c = cos(ang)
+        s: float = sin(ang)
+        c: float = cos(ang)
 
         # Normalize vector
         if ang < 1e-300:
@@ -172,7 +171,7 @@ class Scenario:
             p2 = p2 / ang
             p3 = p3 / ang
 
-        b = np.zeros((3, 3))
+        b: _npt.NDArray = np.zeros((3, 3))
         b[0][0] = c + (1.0 - c) * p1**2
         b[0][1] = (1.0 - c) * p1 * p2 - s * p3
         b[0][2] = (1.0 - c) * p1 * p3 + s * p2
@@ -185,20 +184,36 @@ class Scenario:
 
         return b
 
-    def run_simulation(self):
+    def run_simulation(self: Self) -> SPSOutputs:
         self.reset_variables()
-        output_obj = SPSOutputs()
+        output_obj: SPSOutputs = SPSOutputs()
         ############################
         # Start new time step
-        out_of_time = False
+        out_of_time: bool = False
         #################################
         # Set up loading directions
+        i: int
+        j: int
+        k: int
         i, j, k = self.get_loading_directions()
 
         ##########################
         # Call umat
-        sse = spd = scd = rpl = drpldt = cmname = 0
-        pnewdt = celent = noel = npt = layer = kspt = kstep = kinc = 0
+        sse: float = 0.0
+        spd: float = 0.0
+        scd: float = 0.0
+        rpl: float = 0.0
+        drpldt: float = 0.0
+        cmname: float = 0.0
+        pnewdt: float = 0.0
+        celent: float = 0.0
+
+        noel: int = 0
+        npt: int = 0
+        layer: int = 0
+        kspt: int = 0
+        kstep: int = 0
+        kinc: int = 0
 
         self.stress, self.statev, self.ddsdde = self.umat(
             self.stress,
@@ -251,36 +266,24 @@ class Scenario:
 
             ########################
             # Start new convergence iteration.
-            cont = False
-            Kinc = 0
-            test = np.inf
+            cont: bool = False
+            Kinc: int = 0
+            test: float = np.inf
             while (test > self.TOLERANCE) and (Kinc <= self.MAX_ITR):  # Label 500
                 Kinc += 1
 
                 # Calculate F_dot * time
-                # Note: this is seemingly faster in modern Python than relying on numpy for small dims - JK
-                array1 = np.array(
-                    [
-                        [self.dfgrd1[m][n] - self.dfgrd0[m][n] for n in range(3)]
-                        for m in range(3)
-                    ]
-                )
-                array3 = np.array(
-                    [
-                        [
-                            (self.dfgrd1[m][n] + self.dfgrd0[m][n]) / 2.0
-                            for n in range(3)
-                        ]
-                        for m in range(3)
-                    ]
-                )
+                dfgrd_diff: _npt.NDArray = self.dfgrd1 - self.dfgrd0
+                dfgrd_mean: _npt.NDArray = np.mean((self.dfgrd1, self.dfgrd0), axis=0)
 
                 # Multiply F_dot * F_inverse * dtime
-                array2 = np.linalg.inv(np.array(array3))
-                array3 = np.matmul(array1, array2)
-                # look into putting these into a memoized function - I suspect repetitive input - JK
-                D_dt = (array3 + np.transpose(array3)) / 2
-                W_dt = (array3 + np.transpose(array3)) / 2
+                dfgrd_mean_inv: _npt.NDArray = np.linalg.inv(dfgrd_mean)
+                dfgrd_diff_times_mean_inv: _npt.NDArray = np.matmul(
+                    dfgrd_diff, dfgrd_mean_inv
+                )
+
+                D_dt = (dfgrd_diff_times_mean_inv + dfgrd_diff_times_mean_inv.T) / 2
+                W_dt = (dfgrd_diff_times_mean_inv + dfgrd_diff_times_mean_inv.T) / 2
 
                 # Store D_dt in dstrain
                 self.dstrain[:3] = np.diag(D_dt)
@@ -347,8 +350,8 @@ class Scenario:
                 continue  # restarts outer while loop
             # Finished Increment!
             # Calc effective delta strain and add it to E_eff
-            sm = np.sum(np.square(D_dt))
-            dE_eff = np.sqrt(2.0 * sm / 3.0)
+            sm: _npt.NDArray = np.sum(np.square(D_dt))
+            dE_eff: float = np.sqrt(2.0 * sm / 3.0)
             self.E_eff += dE_eff
 
             # Update strain gradient
@@ -361,7 +364,9 @@ class Scenario:
             self.statev_ref[: self.nstatv] = self.statev[: self.nstatv]
 
             # save outputs
-            output_obj.stress.append(self.von_mises_stress())
+            foo: float = self.von_mises_stress()
+            print("Von Mises Stress Type:", type(foo))
+            output_obj.stress.append(foo)
             output_obj.strain.append(self.strain.copy())
             output_obj.time.append(self.time[1])
             output_obj.Eeff.append(self.E_eff)
@@ -382,14 +387,4 @@ class Scenario:
         self.test_matrices(output_obj.strain, "Strain")
         self.test_matrices(output_obj.all_dfgrd, "Deformation Gradient")
 
-        names = list(output_obj.__slots__)
-        names.remove("vals")
-
-        final_result = pd.DataFrame({
-            "time": output_obj.time,
-            "stress": output_obj.stress,
-            "strain": output_obj.strain,
-            "Eeff": output_obj.Eeff,
-            "all_dfgrd": output_obj.all_dfgrd,
-            })
-        return final_result
+        return output_obj

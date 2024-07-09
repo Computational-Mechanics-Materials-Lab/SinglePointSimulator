@@ -1,6 +1,6 @@
 [project]
 name = "singlepointsim"
-description = "(V)UMAT interoperability layer for quick, pythonic single-point analysis and material-model validation."
+description = "Abaqus FEA UMAT interoperability layer for quick, pythonic single-point analysis and material-model validation."
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [{name = "Clark Hensley", email = "clarkhensley@duck.com"},]
@@ -8,10 +8,19 @@ maintainers = [{name = "Clark Hensley", email = "clarkhensley@duck.com"},]
 dependencies = [
     "numpy",
     "pandas",
-    "scipy",
     "tomli; python_version < '3.11'",
+    "meson",
 ]
-version = "0.0.1"
+dynamic = ["version",]
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "ruff",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "singlepointsim.__version__"}
 
 [build-system]
 requires = ["setuptools", "wheel",]

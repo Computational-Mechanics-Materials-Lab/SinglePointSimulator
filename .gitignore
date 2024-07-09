@@ -14,3 +14,6 @@ srs/sps/*.f90
 srs/sps/*.so
 srs/sps/*.pyf
 srs/sps/__pycache__
+
+mypy.ini
+ruff.toml
