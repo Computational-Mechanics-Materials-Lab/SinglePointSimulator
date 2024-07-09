@@ -11,7 +11,10 @@ dependencies = [
     "scipy",
     "tomli; python_version < '3.11'",
 ]
-version = "0.0.1"
+dynamic = ["version",]
+
+[tool.setuptools.dynamic]
+version = {attr = "singlepointsim.__version__"}
 
 [build-system]
 requires = ["setuptools", "wheel",]

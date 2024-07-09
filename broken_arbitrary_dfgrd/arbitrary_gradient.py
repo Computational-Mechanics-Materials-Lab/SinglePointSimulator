@@ -2,16 +2,17 @@
 
 from .base import Scenario
 import numpy as np
+import numpy.typing as _npt
 from scipy.linalg import fractional_matrix_power
 
 class ArbitraryGradientScenario(Scenario):
 
-    def get_loading_directions(self) -> tuple:
+    def get_loading_directions(self) -> tuple[int, int, int]:
         print("Arbitrary Loading along the diagonal\n")
         return 0, 1, 2
 
     def update_dfgrd(self, i: int, j: int, k: int) -> None:
-        delta_Dii = -(self.stress[i] + self.stress[j]) / (
+        delta_Dii: _npt.NDArray = -(self.stress[i] + self.stress[j]) / (
             self.ddsdde[i][i]
             + self.ddsdde[i][j]
             + self.ddsdde[j][i]

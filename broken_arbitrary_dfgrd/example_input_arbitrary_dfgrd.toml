@@ -1,12 +1,16 @@
 #### Example singlepointsim input file
+
 # Name/path of desired UMAT
-umat = "MODIFIED_JC.f90"
+# NOT Required, can be passed in as second command line argument
+#umat = "MODIFIED_JC.f"
 
 # Path to desired results directory (defaults to "." if not set)
 # Will be created if it does not exist
 results_directory = "results"
 
-# UMAT props
+# Essentially re-implement an Abaqus Input File with some Quality-of-Life simplications, as follows:
+
+# UMAT Input props
 props = [
     120000.0,
     80000.0,
@@ -44,7 +48,7 @@ props = [
     0.0,
 ]
 
-# UMAT nstatv
+# UMAT Input nstatv
 nstatv = 6
 
 # Define as many steps as you desire. One loading scenario per step
