@@ -1,6 +1,5 @@
 meson
 numpy
 pandas
-platformdirs
 mypy
 ruff
