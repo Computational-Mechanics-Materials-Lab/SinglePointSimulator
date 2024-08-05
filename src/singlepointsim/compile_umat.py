@@ -7,7 +7,6 @@ from typing import TextIO
 from types import ModuleType
 import numpy.f2py
 from numpy.f2py.crackfortran import COMMON_FREE_EXTENSIONS, COMMON_FIXED_EXTENSIONS
-from .patch_meson import patch_meson
 
 
 def compile_umat(
@@ -15,6 +14,7 @@ def compile_umat(
 ) -> ModuleType:
     module_name: str
     signature_path: pathlib.Path
+    fortran_path = fortran_path
     module_name, signature_path = get_fortran_metadata(fortran_path)
 
     try:
@@ -22,8 +22,6 @@ def compile_umat(
 
     except ModuleNotFoundError:
         pass
-
-    patch_meson()
 
     if (not signature_path.exists()) or regenerate_sig:
         create_pyf(fortran_path, signature_path, module_name)

@@ -12,7 +12,7 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-from .sps_dataclasses import SPSInput
+from .sps_input import SPSInput
 
 
 class MissingUMATException(Exception):
@@ -61,11 +61,11 @@ def parse_sps_input() -> tuple[pathlib.Path, pathlib.Path, SPSInput]:
 def dict_to_ret(
     input_dict: dict[str, Any], umat_file: pathlib.Path | None
 ) -> tuple[pathlib.Path, pathlib.Path, SPSInput]:
-    umat_path: pathlib.Path | None = input_dict.pop("umat", None)
+    umat_path: str | None = input_dict.pop("umat", None)
     if umat_file is None:
         if umat_path is None:
             raise MissingUMATException
-        umat_file = umat_path
+        umat_file = pathlib.Path(umat_path)
     results_directory: pathlib.Path = pathlib.Path(
         input_dict.pop("results_directory", ".")
     )

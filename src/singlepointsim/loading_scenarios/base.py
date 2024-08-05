@@ -3,10 +3,13 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as _npt
 from math import sin, cos, sqrt
-from typing import Callable, Self
+from typing import Callable, Self, TYPE_CHECKING
 from copy import copy
 from abc import abstractmethod
-from ..sps_dataclasses import SPSStep, SPSOutputs
+
+from ..sps_outputs import SPSOutputs
+if TYPE_CHECKING:
+    from ..sps_step import SPSStep
 
 
 class Scenario:

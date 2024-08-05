@@ -2,7 +2,9 @@ from __future__ import annotations
 from .parse_sps_input import parse_sps_input
 from .loading_scenarios.base import Scenario
 from .compile_umat import compile_umat
-from .sps_dataclasses import SPSInput, SPSStep, SPSOutputs
+from .sps_input import SPSInput
+from .sps_step import SPSStep
+from .sps_outputs import SPSOutputs
 from types import ModuleType
 from typing import Callable, Type
 
