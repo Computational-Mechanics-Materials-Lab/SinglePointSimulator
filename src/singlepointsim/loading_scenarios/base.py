@@ -8,6 +8,7 @@ from copy import copy
 from abc import abstractmethod
 
 from ..sps_outputs import SPSOutputs
+
 if TYPE_CHECKING:
     from ..sps_step import SPSStep
 

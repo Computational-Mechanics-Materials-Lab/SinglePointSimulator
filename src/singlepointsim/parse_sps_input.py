@@ -2,14 +2,15 @@
 
 import argparse
 import pathlib
+import sys
 from typing import BinaryIO, TextIO, Any
 
 
 import json
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ModuleNotFoundError:
+else:
     import tomli as tomllib
 
 from .sps_input import SPSInput
